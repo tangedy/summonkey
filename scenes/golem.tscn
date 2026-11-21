@@ -1,0 +1,55 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/golem.gd" id="1_golem"]
+[ext_resource type="SpriteFrames" path="res://resources/golem_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/particle_frames.tres" id="3_particles"]
+[ext_resource type="Texture2D" path="res://resources/light_soft.tres" id="4_light"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(38, 78)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_stack"]
+size = Vector2(43, 45)
+
+[node name="Golem" type="CharacterBody2D"]
+process_physics_priority = -1
+collision_layer = 8
+collision_mask = 3
+floor_snap_length = 4.0
+platform_floor_layers = 0
+script = ExtResource("1_golem")
+
+[node name="StackVisual" type="Node2D" parent="."]
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+centered = false
+offset = Vector2(-31, -83)
+
+[node name="Particles" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("3_particles")
+animation = &"burst"
+centered = false
+offset = Vector2(-27, -51)
+
+[node name="BodyShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -39)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="CarriedStack" type="AnimatableBody2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+sync_to_physics = false
+
+[node name="Shape" type="CollisionShape2D" parent="CarriedStack"]
+disabled = true
+shape = SubResource("RectangleShape2D_stack")
+
+[node name="Aura" type="PointLight2D" parent="."]
+range_item_cull_mask = 3
+position = Vector2(0, -45)
+color = Color(0.4, 1, 0.6, 1)
+energy = 0.45
+texture = ExtResource("4_light")
+texture_scale = 1.1

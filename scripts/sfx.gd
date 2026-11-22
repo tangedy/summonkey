@@ -8,25 +8,27 @@ extends Node
 const DIR := "res://assets/sfx/"
 const EXTENSIONS := ["wav", "ogg", "mp3"]
 
-## slot name -> [volume_db, random pitch spread]
+## slot name -> [volume_db, random pitch spread, (optional) loop start seconds]
 const SLOTS := {
 	# monkey
 	&"jump": [-4.0, 0.06],
 	&"land": [-8.0, 0.08],
-	&"monkey_step": [-14.0, 0.12],
+	# This recording is ~35 dB quieter than the others and opens with ~1 s of
+	# near-silence, hence the boost and the loop start offset.
+	&"monkey_step": [0, 0.0, 1.0],
 	&"summon": [-2.0, 0.0],
 	&"summon_fail": [-4.0, 0.0],
 	&"swap": [-6.0, 0.05],
 	# golem
 	&"golem_appear": [-3.0, 0.0],
-	&"golem_step": [-10.0, 0.1],
+	&"golem_step": [-10.0, 0.0],
 	&"lift": [-4.0, 0.04],
 	&"drop": [-4.0, 0.04],
 	&"golem_warning": [-6.0, 0.0],
 	&"dismiss": [-3.0, 0.0],
 	&"deny": [-6.0, 0.05],
 	# world
-	&"box_land": [-6.0, 0.1],
+	&"box_land": [-3.0, 0.08],
 	&"banana": [0.0, 0.0],
 	# menus
 	&"menu_select": [-4.0, 0.0],
@@ -37,6 +39,7 @@ var _streams := {}
 var _players: Array[AudioStreamPlayer] = []
 var _next := 0
 var _loops := {}
+var _last_played := {}
 
 
 func _ready() -> void:
@@ -60,6 +63,11 @@ func play(slot: StringName, volume_offset_db := 0.0) -> void:
 		return
 	if not _streams.has(slot):
 		return
+	# A stack of crates landing together should thud once, not three times.
+	var now := Time.get_ticks_msec()
+	if now - int(_last_played.get(slot, -1000)) < 60:
+		return
+	_last_played[slot] = now
 	var cfg: Array = SLOTS[slot]
 	var p := _players[_next]
 	_next = (_next + 1) % VOICES
@@ -80,12 +88,16 @@ func set_loop(slot: StringName, on: bool) -> void:
 			var stream: AudioStream = _streams[slot].duplicate()
 			if "loop" in stream:
 				stream.loop = true
+			var start: float = SLOTS[slot][2] if SLOTS[slot].size() > 2 else 0.0
+			if "loop_offset" in stream:
+				stream.loop_offset = start
 			p.stream = stream
 			p.volume_db = SLOTS[slot][0]
 			add_child(p)
 			_loops[slot] = p
 		if not p.playing:
-			p.play()
+			var cfg: Array = SLOTS[slot]
+			p.play(cfg[2] if cfg.size() > 2 else 0.0)
 	elif p and p.playing:
 		p.stop()
 

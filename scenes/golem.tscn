@@ -37,6 +37,10 @@ offset = Vector2(-27, -51)
 position = Vector2(0, -39)
 shape = SubResource("RectangleShape2D_body")
 
+[node name="StackShape" type="CollisionShape2D" parent="."]
+disabled = true
+shape = SubResource("RectangleShape2D_stack")
+
 [node name="CarriedStack" type="AnimatableBody2D" parent="."]
 collision_layer = 2
 collision_mask = 0

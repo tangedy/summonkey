@@ -48,13 +48,18 @@ var _warned := false
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var particles: AnimatedSprite2D = $Particles
 @onready var carried_body: AnimatableBody2D = $CarriedStack
-@onready var stack_shape: CollisionShape2D = $CarriedStack/Shape
+## The golem's own hitbox for the crates it holds: keeps the stack from
+## passing through walls, ceilings and other crates.
+@onready var stack_shape: CollisionShape2D = $StackShape
+## Same box on a separate body (boxes layer): what the monkey stands on.
+@onready var platform_shape: CollisionShape2D = $CarriedStack/Shape
 @onready var stack_visual: Node2D = $StackVisual
 @onready var aura: PointLight2D = $Aura
 
 
 func _ready() -> void:
 	stack_shape.shape = stack_shape.shape.duplicate()
+	platform_shape.shape = stack_shape.shape
 	# The carried crates are a separate solid body (boxes layer) so the monkey
 	# can stand on them while walking straight through the golem itself.
 	add_collision_exception_with(carried_body)
@@ -288,10 +293,12 @@ func _feet_row() -> int:
 func _set_carried(n: int) -> void:
 	carried = n
 	stack_shape.disabled = n == 0
+	platform_shape.disabled = n == 0
 	# 2px slack on top so a stack fits through corridors exactly its height.
 	var top := CARRY_HEIGHT + n * TILE - 2.0
 	(stack_shape.shape as RectangleShape2D).size = Vector2(41, top - CARRY_HEIGHT)
 	stack_shape.position = Vector2(0, -(top + CARRY_HEIGHT) / 2.0)
+	platform_shape.position = stack_shape.position
 	for child in stack_visual.get_children():
 		child.queue_free()
 	for i in n:

@@ -70,6 +70,11 @@ func _process(delta: float) -> bool:
 			if g.global_position.x >= 1330.0 or t > 3.0:
 				Input.action_release("move_right")
 				if absf(g.velocity.x) < 1.0:
+					# The tunnel ceiling at (27,16) must stop the carried crate.
+					if g.global_position.x > 1200.0:
+						fail("carried crate passed through the wall (golem x=%.1f)" % g.global_position.x)
+						return true
+					note("carried crate blocked by wall at golem x=%.1f" % g.global_position.x)
 					tap("lift")
 					next()
 		6:

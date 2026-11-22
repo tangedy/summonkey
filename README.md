@@ -43,5 +43,11 @@ light layer 2 and the level's lights (layer 1) only light characters and boxes.
 The staff, golem and banana lights hit both. HDR 2D stays off: in 4.7 with
 viewport stretch it renders far too dark.
 
-When exporting, add `*.txt` to the export preset's non-resource include filter
-so the level maps ship with the build.
+## Exporting for itch.io
+
+`tools/export_web.sh` builds the Web preset and zips it to
+`build/summonkey-web.zip`. On itch: Kind of project = HTML, upload the zip,
+tick "played in the browser", viewport 1536 x 864 (or 1024 x 576), enable the
+fullscreen button. The preset is single-threaded so it needs no special
+headers, ships `*.txt` (the level maps) and leaves out `tools/`. The project
+uses the Compatibility renderer because browsers require it.
